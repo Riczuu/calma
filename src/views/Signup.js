@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Avatar from '@material-ui/core/Avatar';
 import Button from '@material-ui/core/Button';
 import CssBaseline from '@material-ui/core/CssBaseline';
@@ -12,6 +12,9 @@ import LockOutlinedIcon from '@material-ui/icons/LockOutlined';
 import Typography from '@material-ui/core/Typography';
 import { makeStyles } from '@material-ui/core/styles';
 import Container from '@material-ui/core/Container';
+import app from '../base'
+import {useHistory} from 'react-router-dom'
+
 
 function Copyright() {
   return (
@@ -47,6 +50,31 @@ const useStyles = makeStyles((theme) => ({
 
 export default function Signup() {
   const classes = useStyles();
+  const [name, setName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  let history = useHistory();
+
+  useEffect(() => {
+    app.auth().onAuthStateChanged(firebaseUser => {
+      const currentUser = app.auth().currentUser;
+      if(currentUser !== null){
+        currentUser.updateProfile({
+          displayName: name + " " + lastName
+        })
+        history.push("/dashboard");
+      }
+    });
+  })
+  
+  async function registerUser (e){
+    e.preventDefault();
+    try{
+      await app.auth().createUserWithEmailAndPassword(email, password);
+    }catch(err){alert(err)}
+  }
+
 
   return (
     <Container component="main" maxWidth="xs">
@@ -70,6 +98,8 @@ export default function Signup() {
                 id="firstName"
                 label="First Name"
                 autoFocus
+                onChange={(e) => setName(e.target.value)}
+                value={name}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
@@ -81,6 +111,8 @@ export default function Signup() {
                 label="Last Name"
                 name="lastName"
                 autoComplete="lname"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -92,6 +124,8 @@ export default function Signup() {
                 label="Email Address"
                 name="email"
                 autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -104,6 +138,8 @@ export default function Signup() {
                 type="password"
                 id="password"
                 autoComplete="current-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
               />
             </Grid>
             <Grid item xs={12}>
@@ -119,6 +155,7 @@ export default function Signup() {
             variant="contained"
             color="primary"
             className={classes.submit}
+            onClick={registerUser}
           >
             Sign Up
           </Button>
